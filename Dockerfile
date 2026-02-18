@@ -14,6 +14,6 @@ RUN apt-get update && \
 EXPOSE 8000
 
 COPY app ./app
-COPY static ./static
+#COPY static ./static
 
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0"]
