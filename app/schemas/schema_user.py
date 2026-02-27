@@ -1,5 +1,3 @@
-from typing import Optional
-
 from pydantic import BaseModel
 
 
@@ -10,8 +8,7 @@ class CreateUserSchema(BaseModel):
 
 
 class LoginUserSchema(BaseModel):
-    email: Optional[str]
-    username: Optional[str]
+    login: str
     password: str
 
 

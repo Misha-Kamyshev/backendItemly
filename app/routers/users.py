@@ -30,12 +30,11 @@ async def sign_up(data: CreateUserSchema, session: AsyncSession = Depends(get_se
         raise HTTPException(status_code=400, detail="Логин или почта уже заняты")
 
 
-@router.post("/login", response_model=PushDataUserSchema)
+@router.post("/signin", response_model=PushDataUserSchema)
 async def sign_in(data: LoginUserSchema):
     result_db: dict[str, Any] | None
 
-    login_value = data.username or data.email
-    result_db = await get_user(login_value)
+    result_db = await get_user(data.login)
 
     if result_db is None:
         raise HTTPException(status_code=400, detail="Такой пользователь не зарегистрирован")
