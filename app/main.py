@@ -28,7 +28,7 @@ from contextlib import asynccontextmanager
 from app.databases.postgres_asyncpg import asyncpg_db
 from .databases.postgres_orm import init_engine
 from .static import SQLALCHEMY_DSN, ASYNC_PG_DSN
-from .routers import users
+from .routers import users, items
 
 app = FastAPI()
 app.add_middleware(
@@ -59,3 +59,4 @@ app = FastAPI(lifespan=lifespan)
 # )
 
 app.include_router(users.router)
+app.include_router(items.router)
