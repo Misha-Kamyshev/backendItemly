@@ -22,7 +22,7 @@
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-# from fastapi.staticfiles import StaticFiles
+from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 
 from app.databases.postgres_asyncpg import asyncpg_db
@@ -52,11 +52,11 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-# app.mount(
-#     "/static",
-#     StaticFiles(directory="static"),
-#     name="static"
-# )
+app.mount(
+    "/static",
+    StaticFiles(directory="static"),
+    name="static"
+)
 
 app.include_router(users.router)
 app.include_router(items.router)
