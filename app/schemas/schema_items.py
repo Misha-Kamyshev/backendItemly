@@ -15,3 +15,8 @@ class ItemSimilarDataSchema(BaseModel):
     username: str
     tags: list[str]
     last_id: int | None = None
+
+
+class HomeRequest(BaseModel):
+    username: str
+    last_id: int | None = None

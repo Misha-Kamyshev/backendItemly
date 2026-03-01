@@ -8,15 +8,15 @@ from ..databases.postgres_orm import get_session
 from ..databases.repositories_orm.item import save_image, add_tags, add_items_tags, add_item_db
 from ..databases.repositories_sql.items import get_similar_items_db, get_like_items_db, get_tags_from_like
 from ..databases.repositories_sql.user import get_user
-from ..schemas.schema_items import HomeDataSchema, ItemSimilarDataSchema, ItemDataSchema
+from ..schemas.schema_items import HomeDataSchema, ItemSimilarDataSchema, ItemDataSchema, HomeRequest
 from ..databases.repositories_sql.tags import get_tags_for_item, get_tags
 
 router = APIRouter(prefix="/items", tags=["Items"])
 
 
 @router.post("/get_main", response_model=HomeDataSchema)
-async def get_main_items(username: str, last_id: int | None = None):
-    user = await get_user(username)
+async def get_main_items(request: HomeRequest):
+    user = await get_user(request.username)
 
     if not user:
         raise HTTPException(status_code=401, detail="User not found")
@@ -28,7 +28,7 @@ async def get_main_items(username: str, last_id: int | None = None):
 
     limit = 20
 
-    rows = await get_similar_items_db(tags_user, user_id, limit + 1, last_id)
+    rows = await get_similar_items_db(tags_user, user_id, limit + 1, request.last_id)
 
     has_next = len(rows) > limit
     if has_next:
