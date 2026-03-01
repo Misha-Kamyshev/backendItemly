@@ -1,38 +1,51 @@
-from typing import Any
+from typing import Any, Optional
 
 from app.databases.postgres_asyncpg import asyncpg_db
 
 
-async def get_similar_items_db(tags: list[str], username: str) -> list[dict[str, Any]]:
+async def get_similar_items_db(
+        tags: list[str],
+        user_id: int,
+        limit: int,
+        last_id: int | None
+) -> list[dict]:
     query = """
-            SELECT DISTINCT items.id,
-                            items.image_url
+            SELECT items.id,
+                   items.image_url
             FROM items
-                     JOIN items_tags ON items.id = items_tags.item_id
-                     JOIN tags ON items_tags.tags_id = tags.id
                      LEFT JOIN items_like
                                ON items.id = items_like.item_id
-                                   AND items_like.user_id = (SELECT id FROM users WHERE username = $2)
-            WHERE tags.name = ANY ($1::text[])
+                                   AND items_like.user_id = $2
+            WHERE items.user_id != $2
               AND items_like.user_id IS NULL
-            ORDER BY items.id
+              AND ($3::bigint IS NULL OR items.id < $3)
+            ORDER BY CASE
+                         WHEN EXISTS (SELECT 1
+                                      FROM items_tags it
+                                               JOIN tags t ON it.tags_id = t.id
+                                      WHERE it.item_id = items.id
+                                        AND t.name = ANY ($1::text[]))
+                             THEN 0
+                         ELSE 1
+                         END,
+                     items.id DESC
+            LIMIT $4
             """
 
-    rows = await asyncpg_db.fetch(query, tags, username)
+    rows = await asyncpg_db.fetch(query, tags, user_id, last_id, limit)
     return [dict(row) for row in rows]
 
 
-async def get_like_items_db(username: str) -> list[int]:
+async def get_like_items_db(user_id: int) -> list[int]:
     query = """
-            SELECT items_like.item_id
+            SELECT item_id
             FROM items_like
-                     join users u on u.id = items_like.user_id
-            where u.username = $1
+            WHERE user_id = $1
             ORDER BY items_like.item_id DESC
             LIMIT 50
             """
 
-    rows = await asyncpg_db.fetch(query, username)
+    rows = await asyncpg_db.fetch(query, user_id)
     return [row["item_id"] for row in rows]
 
 
@@ -52,15 +65,3 @@ async def get_tags_from_like(items: list[int]) -> list[str]:
         result.append(row["name"])
 
     return result
-
-
-async def get_bonus_items_db() -> list[dict[str, Any]]:
-    query = """
-            SELECT id, image_url
-            FROM items
-            ORDER BY RANDOM()
-            LIMIT 20
-            """
-
-    rows = await asyncpg_db.fetch(query)
-    return [dict(row) for row in rows]
