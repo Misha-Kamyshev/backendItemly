@@ -15,7 +15,7 @@ class Item(Base):
 
 
 class ItemsLike(Base):
-    __tablename__ = "items_likes"
+    __tablename__ = "items_like"
 
     user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), primary_key=True)
     item_id: Mapped[int] = mapped_column(Integer, ForeignKey("items.id"), primary_key=True)
