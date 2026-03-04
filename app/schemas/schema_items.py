@@ -29,7 +29,7 @@ class ItemRequest(BaseModel):
 
 class ItemInformation(BaseModel):
     tags: list[str]
-    icon_author: str
+    icon_author: str | None
     author: str
     name: str
     count_like: int
