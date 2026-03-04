@@ -2,13 +2,14 @@ import os
 import uuid
 import aiofiles
 
+from typing import Type
 from fastapi import UploadFile
 from sqlalchemy.dialects.postgresql import insert
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.databases.models.model_item import Item, ItemsTags, Tags
-
+from app.databases.models.model_item import Item, ItemsTags, Tags, FavoriteItem, ItemsLike
+from ..models.base import Base
 
 async def add_item_db(session: AsyncSession, user_id: int, image_url: str, name: str) -> Item | None:
     item = Item(image_url=image_url, user_id=user_id, name=name)
@@ -43,6 +44,50 @@ async def add_tags(session: AsyncSession, name: list[str]) -> bool:
 
     try:
         await session.execute(stmt)
+        await session.commit()
+        return True
+    except IntegrityError:
+        await session.rollback()
+        return False
+
+
+async def add_favorite(session: AsyncSession, user_id: int, item_id: int) -> bool:
+    favorite_item = FavoriteItem(user_id=user_id, item_id=item_id)
+    session.add(favorite_item)
+
+    try:
+        await session.commit()
+        return True
+    except IntegrityError:
+        await session.rollback()
+        return False
+
+
+async def delete_relation(
+        session: AsyncSession,
+        model: Type[Base],
+        user_id: int,
+        item_id: int
+) -> bool:
+    obj = await session.get(model, (user_id, item_id))
+
+    if not obj:
+        return True
+
+    try:
+        await session.delete(obj)
+        await session.commit()
+        return True
+    except SQLAlchemyError:
+        await session.rollback()
+        return False
+
+
+async def add_like_db(session: AsyncSession, user_id: int, item_id: int) -> bool:
+    item_like = ItemsLike(user_id=user_id, item_id=item_id)
+    session.add(item_like)
+
+    try:
         await session.commit()
         return True
     except IntegrityError:

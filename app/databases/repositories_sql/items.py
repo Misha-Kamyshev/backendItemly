@@ -1,5 +1,3 @@
-from typing import Any, Optional
-
 from app.databases.postgres_asyncpg import asyncpg_db
 
 
@@ -16,8 +14,7 @@ async def get_similar_items_db(
                      LEFT JOIN items_like
                                ON items.id = items_like.item_id
                                    AND items_like.user_id = $2
-            WHERE items.user_id != $2
-              AND items_like.user_id IS NULL
+            WHERE items_like.user_id IS NULL
               AND ($3::bigint IS NULL OR items.id < $3)
             ORDER BY CASE
                          WHEN EXISTS (SELECT 1
@@ -65,3 +62,52 @@ async def get_tags_from_like(items: list[int]) -> list[str]:
         result.append(row["name"])
 
     return result
+
+
+async def get_favorite_items(user_id: int, last_id: int | None, limit: int) -> list[dict]:
+    query = """
+            SELECT i.id,
+                   i.image_url
+            FROM favorite_items f
+                     JOIN items i ON i.id = f.item_id
+            WHERE f.user_id = $1
+              AND ($2::bigint IS NULL OR i.id < $2)
+            ORDER BY i.id DESC
+            LIMIT $3
+            """
+
+    rows = await asyncpg_db.fetch(query, user_id, last_id, limit)
+    return [dict(row) for row in rows]
+
+
+async def get_my_items(user_id: int, last_id: int | None, limit: int) -> list[dict]:
+    query = """
+            SELECT i.id,
+                   i.image_url
+            FROM items i
+            WHERE i.user_id = $1
+              AND ($2::bigint IS NULL OR i.id < $2)
+            ORDER BY i.id DESC
+            LIMIT $3
+            """
+
+    rows = await asyncpg_db.fetch(query, user_id, last_id, limit)
+    return [dict(row) for row in rows]
+
+
+async def get_info_item(id_item: int):
+    query = """
+            SELECT u.username,
+                   u.path_preview,
+                   i.name,
+                   COUNT(il.user_id) AS likes_count,
+                   0                 as comment_count
+            FROM items i
+                     JOIN public.users u on i.user_id = u.id
+                     LEFT JOIN public.items_like il on i.id = il.item_id
+            WHERE i.id = $1
+            GROUP BY u.username, i.name, u.path_preview
+            """
+
+    row = await asyncpg_db.fetch_row(query, id_item)
+    return dict(row) if row else None

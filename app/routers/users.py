@@ -1,15 +1,16 @@
 from typing import Any
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Form, File, UploadFile, Response
 from fastapi.params import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.databases.postgres_orm import get_session
-from app.databases.repositories_orm.user import create_user
+from app.databases.repositories_orm.user import create_user, create_path_preview, save_image_preview
 from app.databases.repositories_sql.user import get_user
 from app.security.crypt import hash_password, verify_password
 from app.security.jwt import create_access_token, create_refresh_token
 from app.schemas.schema_user import CreateUserSchema, PushDataUserSchema, LoginUserSchema
+from app.utils import get_user_id
 
 router = APIRouter(prefix="/user", tags=["Catalog"])
 
@@ -51,3 +52,20 @@ async def sign_in(data: LoginUserSchema):
         access_token=access_token,
         refresh_token=refresh_token
     )
+
+
+
+@router.post("/change_preview", status_code=201)
+async def change_preview(
+        username: str = Form(...),
+        image: UploadFile = File(...),
+        session: AsyncSession = Depends(get_session)
+):
+    user_id = await get_user_id(username)
+
+    path_preview = await save_image_preview(image, user_id)
+
+    if not create_path_preview(session, user_id, path_preview):
+        raise HTTPException(status_code=500, detail="Error in server")
+
+    return Response(status_code=201)

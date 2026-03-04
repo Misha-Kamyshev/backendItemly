@@ -33,3 +33,10 @@ class Tags(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String, unique=True)
+
+
+class FavoriteItem(Base):
+    __tablename__ = "favorite_items"
+
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), primary_key=True)
+    item_id: Mapped[int] = mapped_column(Integer, ForeignKey("items.id"), primary_key=True)

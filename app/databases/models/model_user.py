@@ -11,3 +11,4 @@ class User(Base):
     username: Mapped[str] = mapped_column(String(50), unique=True)
     email: Mapped[str] = mapped_column(String(100), unique=True)
     password: Mapped[str] = mapped_column(Text)
+    path_preview: Mapped[str] = mapped_column(Text, unique=True)

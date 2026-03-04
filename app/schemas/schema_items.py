@@ -20,3 +20,17 @@ class ItemSimilarDataSchema(BaseModel):
 class HomeRequest(BaseModel):
     username: str
     last_id: int | None = None
+
+
+class ItemRequest(BaseModel):
+    id: int
+    username: str
+
+
+class ItemInformation(BaseModel):
+    tags: list[str]
+    icon_author: str
+    author: str
+    name: str
+    count_like: int
+    count_comment: int
