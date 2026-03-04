@@ -7,21 +7,16 @@ from starlette.responses import Response
 from ..databases.postgres_orm import get_session
 from ..databases.repositories_orm.item import save_image, add_tags, add_items_tags, add_item_db
 from ..databases.repositories_sql.items import get_similar_items_db, get_like_items_db, get_tags_from_like
-from ..databases.repositories_sql.user import get_user
 from ..schemas.schema_items import HomeDataSchema, ItemSimilarDataSchema, ItemDataSchema, HomeRequest
 from ..databases.repositories_sql.tags import get_tags_for_item, get_tags
+from ..utils import get_user_id
 
 router = APIRouter(prefix="/items", tags=["Items"])
 
 
 @router.post("/get_main", response_model=HomeDataSchema)
 async def get_main_items(request: HomeRequest):
-    user = await get_user(request.username)
-
-    if not user:
-        raise HTTPException(status_code=401, detail="User not found")
-
-    user_id: int = user["id"]
+    user_id = await get_user_id(request.username)
 
     like_items_user = await get_like_items_db(user_id)
     tags_user = await get_tags_from_like(like_items_user)
@@ -41,10 +36,7 @@ async def get_main_items(request: HomeRequest):
 
 @router.post("/get_similar_images", response_model=HomeDataSchema)
 async def get_similar_items(data: ItemSimilarDataSchema):
-    user = await get_user(data.username)
-    if not user:
-        raise HTTPException(status_code=401, detail="User not found")
-    user_id: int = user["id"]
+    user_id: int = await get_user_id(data.username)
 
     limit = 20
 
@@ -74,10 +66,7 @@ async def add_item(
 ):
     tags_list = ["#" + tag for tag in tags.split('#') if tag]
 
-    user = await get_user(username)
-    if not user:
-        raise HTTPException(status_code=401, detail="User not found")
-    user_id: int = user["id"]
+    user_id: int = await get_user_id(username)
 
     path_image = await save_image(image, user_id)
 
