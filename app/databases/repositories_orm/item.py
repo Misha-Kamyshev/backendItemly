@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.databases.models.model_item import Item, ItemsTags, Tags, FavoriteItem, ItemsLike
 from ..models.base import Base
 
+
 async def add_item_db(session: AsyncSession, user_id: int, image_url: str, name: str) -> Item | None:
     item = Item(image_url=image_url, user_id=user_id, name=name)
     session.add(item)
@@ -37,13 +38,11 @@ async def add_items_tags(session: AsyncSession, item_id: int, tags: list[int]) -
         return False
 
 
-async def add_tags(session: AsyncSession, name: list[str]) -> bool:
-    stmt = insert(Tags).values(
-        [{"name": name_tag} for name_tag in name]
-    ).on_conflict_do_nothing(index_elements=["name"])
-
+async def add_tags(session: AsyncSession, names: list[str]) -> bool:
     try:
-        await session.execute(stmt)
+        for tag_name in names:
+            stmt = insert(Tags).values(name=tag_name).on_conflict_do_nothing(index_elements=["name"])
+            await session.execute(stmt)
         await session.commit()
         return True
     except IntegrityError:

@@ -71,7 +71,7 @@ async def add_item(
         image: UploadFile = File(...),
         session: AsyncSession = Depends(get_session)
 ):
-    tags_list = ["#" + tag for tag in tags.split('#') if tag]
+    tags_list = tags.split(';')
 
     user_id: int = await get_user_id(username)
 
