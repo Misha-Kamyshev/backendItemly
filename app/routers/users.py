@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.databases.postgres_orm import get_session
 from app.databases.repositories_orm.user import create_user, create_path_preview, save_image_preview
-from app.databases.repositories_sql.user import get_user
+from app.databases.repositories_sql.user import get_user, get_image_user_db
 from app.security.crypt import hash_password, verify_password
 from app.security.jwt import create_access_token, create_refresh_token
 from app.schemas.schema_user import CreateUserSchema, PushDataUserSchema, LoginUserSchema
@@ -69,3 +69,10 @@ async def change_preview(
         raise HTTPException(status_code=500, detail="Error in server")
 
     return Response(status_code=201)
+
+
+@router.post("/get_image_user", response_model=str)
+async def get_image_user(username: str):
+    user_id = await get_user_id(username)
+
+    return get_image_user_db(user_id)
