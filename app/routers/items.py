@@ -60,7 +60,8 @@ async def get_tags_item(id_item: int):
     info = await get_info_item(id_item)
 
     return ItemInformation(tags=tags, icon_author=info["path_preview"], author=info["username"], name=info["name"],
-                           count_like=info["likes_count"], count_comment=info["comment_count"])
+                           count_like=info["likes_count"], count_comment=info["comment_count"],
+                           save_item=info["save_item"], like_item=info["like_item"])
 
 
 @router.post("/add_item", status_code=201)

@@ -100,13 +100,26 @@ async def get_info_item(id_item: int):
             SELECT u.username,
                    u.path_preview,
                    i.name,
-                   COUNT(il.user_id) AS likes_count,
-                   0                 as comment_count
+                   COUNT(il.user_id)          AS likes_count,
+                   0                          AS comment_count,
+
+                   EXISTS(SELECT 1
+                          FROM favorite_items
+                          WHERE item_id = i.id
+                            AND user_id = $2) AS save_item,
+
+                   EXISTS(SELECT 1
+                          FROM items_like
+                          WHERE item_id = i.id
+                            AND user_id = $2) AS like_item
+
             FROM items i
-                     JOIN public.users u on i.user_id = u.id
-                     LEFT JOIN public.items_like il on i.id = il.item_id
+                     JOIN users u ON i.user_id = u.id
+                     LEFT JOIN items_like il ON i.id = il.item_id
+
             WHERE i.id = $1
-            GROUP BY u.username, i.name, u.path_preview
+
+            GROUP BY i.id, u.username, u.path_preview, i.name
             """
 
     row = await asyncpg_db.fetch_row(query, id_item)
