@@ -14,7 +14,11 @@ async def get_similar_items_db(
                      LEFT JOIN items_like
                                ON items.id = items_like.item_id
                                    AND items_like.user_id = $2
+                     LEFT JOIN favorite_items
+                               ON items.id = favorite_items.item_id
+                                   AND favorite_items.user_id = $2
             WHERE items_like.user_id IS NULL
+              AND favorite_items.user_id IS NULL
               AND ($3::bigint IS NULL OR items.id < $3)
             ORDER BY CASE
                          WHEN EXISTS (SELECT 1
