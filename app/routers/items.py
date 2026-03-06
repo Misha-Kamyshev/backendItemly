@@ -8,7 +8,7 @@ from ..databases.postgres_orm import get_session
 from ..databases.repositories_orm.item import save_image, add_tags, add_items_tags, add_item_db, add_favorite, \
     delete_relation, add_like_db
 from ..databases.repositories_sql.items import get_similar_items_db, get_like_items_db, get_tags_from_like, \
-    get_favorite_items, get_my_items, get_info_item
+    get_favorite_items, get_my_items, get_info_item, get_like_db
 from ..schemas.schema_items import HomeDataSchema, ItemSimilarDataSchema, ItemDataSchema, HomeRequest, ItemRequest, \
     ItemInformation
 from ..databases.repositories_sql.tags import get_tags_for_item, get_tags
@@ -55,9 +55,10 @@ async def get_similar_items(data: ItemSimilarDataSchema):
 
 
 @router.get("/get_information", response_model=ItemInformation)
-async def get_tags_item(id_item: int):
+async def get_information_item(id_item: int, username: str):
+    user_id: int = await get_user_id(username)
     tags = await get_tags_for_item(id_item)
-    info = await get_info_item(id_item)
+    info = await get_info_item(id_item, user_id)
 
     return ItemInformation(tags=tags, icon_author=info["path_preview"], author=info["username"], name=info["name"],
                            count_like=info["likes_count"], count_comment=info["comment_count"],
@@ -165,3 +166,20 @@ async def delete_like(request: ItemRequest, session: AsyncSession = Depends(get_
         raise HTTPException(status_code=500, detail="Item not deleted")
 
     return Response(status_code=204)
+
+
+@router.post("/get_like", response_model=HomeDataSchema)
+async def get_like(request: HomeRequest):
+    user_id = await get_user_id(request.username)
+
+    limit = 20
+
+    rows = await get_like_db (user_id, request.last_id, limit)
+
+    has_next = len(rows) > limit
+    if has_next:
+        rows = rows[:limit]
+
+    items = [ItemDataSchema(**row) for row in rows]
+
+    return HomeDataSchema(items=items, has_next=has_next)

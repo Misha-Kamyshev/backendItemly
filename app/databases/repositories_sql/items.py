@@ -95,7 +95,7 @@ async def get_my_items(user_id: int, last_id: int | None, limit: int) -> list[di
     return [dict(row) for row in rows]
 
 
-async def get_info_item(id_item: int):
+async def get_info_item(id_item: int, user_id: int):
     query = """
             SELECT u.username,
                    u.path_preview,
@@ -122,5 +122,19 @@ async def get_info_item(id_item: int):
             GROUP BY i.id, u.username, u.path_preview, i.name
             """
 
-    row = await asyncpg_db.fetch_row(query, id_item)
+    row = await asyncpg_db.fetch_row(query, id_item, user_id)
     return dict(row) if row else None
+    
+async def get_like_db(user_id: int, last_id: int | None, limit: int) -> list[dict]:
+    query = """
+            SELECT i.id,
+                   i.image_url
+            FROM items_like il
+                     JOIN items i ON i.id = il.item_id
+            WHERE il.user_id = $1
+              AND ($2::bigint IS NULL OR i.id < $2)
+            ORDER BY i.id DESC
+            LIMIT $3
+            """
+    rows = await asyncpg_db.fetch(query, user_id, last_id, limit)
+    return [dict(row) for row in rows]

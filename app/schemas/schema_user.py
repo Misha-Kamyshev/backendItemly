@@ -16,3 +16,8 @@ class PushDataUserSchema(BaseModel):
     username: str
     access_token: str
     refresh_token: str
+    
+
+class PushPreviewImageUserSchema(BaseModel):
+    path_preview: str | None
+

@@ -9,7 +9,7 @@ from app.databases.repositories_orm.user import create_user, create_path_preview
 from app.databases.repositories_sql.user import get_user, get_image_user_db
 from app.security.crypt import hash_password, verify_password
 from app.security.jwt import create_access_token, create_refresh_token
-from app.schemas.schema_user import CreateUserSchema, PushDataUserSchema, LoginUserSchema
+from app.schemas.schema_user import CreateUserSchema, PushDataUserSchema, LoginUserSchema, PushPreviewImageUserSchema
 from app.utils import get_user_id
 
 router = APIRouter(prefix="/user", tags=["Catalog"])
@@ -71,8 +71,8 @@ async def change_preview(
     return Response(status_code=201)
 
 
-@router.post("/get_image_user", response_model=str)
+@router.post("/get_image_user", response_model=PushPreviewImageUserSchema)
 async def get_image_user(username: str):
     user_id = await get_user_id(username)
 
-    return get_image_user_db(user_id)
+    return await get_image_user_db(user_id)
