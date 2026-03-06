@@ -101,7 +101,6 @@ async def get_info_item(id_item: int, user_id: int):
                    u.path_preview,
                    i.name,
                    COUNT(il.user_id)          AS likes_count,
-                   0                          AS comment_count,
 
                    EXISTS(SELECT 1
                           FROM favorite_items

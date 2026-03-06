@@ -33,6 +33,5 @@ class ItemInformation(BaseModel):
     author: str
     name: str
     count_like: int
-    count_comment: int
     save_item: bool
     like_item: bool
