@@ -8,7 +8,7 @@ from ..databases.postgres_orm import get_session
 from ..databases.repositories_orm.item import save_image, add_tags, add_items_tags, add_item_db, add_favorite, \
     delete_relation, add_like_db
 from ..databases.repositories_sql.items import get_similar_items_db, get_like_items_db, get_tags_from_like, \
-    get_favorite_items, get_my_items, get_info_item, get_like_db
+    get_favorite_items, get_my_items, get_info_item, get_like_db, get_items_author_db
 from ..schemas.schema_items import HomeDataSchema, ItemSimilarDataSchema, ItemDataSchema, HomeRequest, ItemRequest, \
     ItemInformation
 from ..databases.repositories_sql.tags import get_tags_for_item, get_tags
@@ -173,7 +173,24 @@ async def get_like(request: HomeRequest):
 
     limit = 20
 
-    rows = await get_like_db (user_id, request.last_id, limit)
+    rows = await get_like_db(user_id, request.last_id, limit)
+
+    has_next = len(rows) > limit
+    if has_next:
+        rows = rows[:limit]
+
+    items = [ItemDataSchema(**row) for row in rows]
+
+    return HomeDataSchema(items=items, has_next=has_next)
+
+
+@router.post("/get_items_author", response_model=HomeDataSchema)
+async def get_items_author(request: HomeRequest):
+    user_id = await get_user_id(request.username)
+
+    limit = 20
+
+    rows = await get_items_author_db(user_id, request.last_id, limit)
 
     has_next = len(rows) > limit
     if has_next:

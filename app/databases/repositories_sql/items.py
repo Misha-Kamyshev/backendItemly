@@ -123,7 +123,8 @@ async def get_info_item(id_item: int, user_id: int):
 
     row = await asyncpg_db.fetch_row(query, id_item, user_id)
     return dict(row) if row else None
-    
+
+
 async def get_like_db(user_id: int, last_id: int | None, limit: int) -> list[dict]:
     query = """
             SELECT i.id,
@@ -131,6 +132,20 @@ async def get_like_db(user_id: int, last_id: int | None, limit: int) -> list[dic
             FROM items_like il
                      JOIN items i ON i.id = il.item_id
             WHERE il.user_id = $1
+              AND ($2::bigint IS NULL OR i.id < $2)
+            ORDER BY i.id DESC
+            LIMIT $3
+            """
+    rows = await asyncpg_db.fetch(query, user_id, last_id, limit)
+    return [dict(row) for row in rows]
+
+
+async def get_items_author_db(user_id: int, last_id: int | None, limit: int) -> list[dict]:
+    query = """
+            SELECT i.id,
+                   i.image_url
+            FROM items i
+            WHERE i.user_id = $1
               AND ($2::bigint IS NULL OR i.id < $2)
             ORDER BY i.id DESC
             LIMIT $3
