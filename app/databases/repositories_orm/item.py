@@ -108,3 +108,17 @@ async def save_image(image: UploadFile, user_id: int) -> str:
         await out_file.write(content)
 
     return file_path
+
+
+async def delete_item_db(session: AsyncSession, user_id: int, item_id: int) -> bool:
+    obj = await session.get(Item, (user_id, item_id))
+
+    if not obj:
+        return True
+
+    try:
+        await session.delete(obj)
+        return True
+    except SQLAlchemyError:
+        await session.rollback()
+        return False

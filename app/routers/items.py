@@ -3,10 +3,10 @@ from fastapi.params import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette.responses import Response
 
-from ..databases.models.model_item import FavoriteItem, ItemsLike
+from ..databases.models.model_item import FavoriteItem, ItemsLike, Item
 from ..databases.postgres_orm import get_session
 from ..databases.repositories_orm.item import save_image, add_tags, add_items_tags, add_item_db, add_favorite, \
-    delete_relation, add_like_db
+    delete_relation, add_like_db, delete_item_db
 from ..databases.repositories_sql.items import get_similar_items_db, get_like_items_db, get_tags_from_like, \
     get_favorite_items, get_my_items, get_info_item, get_like_db, get_items_author_db
 from ..schemas.schema_items import HomeDataSchema, ItemSimilarDataSchema, ItemDataSchema, HomeRequest, ItemRequest, \
@@ -199,3 +199,13 @@ async def get_items_author(request: HomeRequest):
     items = [ItemDataSchema(**row) for row in rows]
 
     return HomeDataSchema(items=items, has_next=has_next)
+
+
+@router.post("delete_item", status_code=204)
+async def delete_item(request: ItemRequest, session: AsyncSession = Depends(get_session)):
+    user_id = await get_user_id(request.username)
+
+    if not await delete_item_db(session, user_id, request.id):
+        raise HTTPException(status_code=500, detail="Item not deleted")
+
+    return Response(status_code=204)
