@@ -35,3 +35,8 @@ class ItemInformation(BaseModel):
     count_like: int
     save_item: bool
     like_item: bool
+
+
+class SearchRequest(BaseModel):
+    query: str
+    lastId: int | None

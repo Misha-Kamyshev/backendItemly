@@ -156,3 +156,22 @@ async def get_items_author_db(user_id: int, last_id: int | None, limit: int) -> 
             """
     rows = await asyncpg_db.fetch(query, user_id, last_id, limit)
     return [dict(row) for row in rows]
+
+
+async def search_items_db(search_query: str, last_id: int | None, limit: int) -> list[dict]:
+    query = """
+            SELECT DISTINCT i.id,
+                            i.image_url
+            FROM items i
+                     LEFT JOIN items_tags it ON it.item_id = i.id
+                     LEFT JOIN tags t ON t.id = it.tags_id
+            WHERE (
+                i.name ILIKE '%' || $1 || '%'
+                    OR t.name ILIKE '%' || $1 || '%'
+                )
+              AND ($2::bigint IS NULL OR i.id < $2)
+            ORDER BY i.id DESC
+            LIMIT $3
+            """
+    rows = await asyncpg_db.fetch(query, search_query, last_id, limit)
+    return [dict(row) for row in rows]
