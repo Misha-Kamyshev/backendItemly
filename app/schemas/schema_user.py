@@ -14,6 +14,7 @@ class LoginUserSchema(BaseModel):
 
 class PushDataUserSchema(BaseModel):
     username: str
+    email: str
     access_token: str
     refresh_token: str
     

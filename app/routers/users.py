@@ -23,6 +23,7 @@ async def sign_up(data: CreateUserSchema, session: AsyncSession = Depends(get_se
         refresh_token = create_refresh_token(user.id, user.username)
         return PushDataUserSchema(
             username=user.username,
+            email=user.email,
             access_token=access_token,
             refresh_token=refresh_token
         )
@@ -44,11 +45,13 @@ async def sign_in(data: LoginUserSchema):
         raise HTTPException(status_code=400, detail="Не правильный пароль")
 
     username: str = result_db["username"]
+    email: str = result_db["email"]
     access_token = create_access_token(result_db['id'], username)
     refresh_token = create_refresh_token(result_db['id'], username)
 
     return PushDataUserSchema(
         username=username,
+        email=email,
         access_token=access_token,
         refresh_token=refresh_token
     )

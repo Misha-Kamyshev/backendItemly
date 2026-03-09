@@ -5,7 +5,7 @@ from app.databases.postgres_asyncpg import asyncpg_db
 
 async def get_user(login: str) -> dict[str, Any] | None:
     query = """
-        SELECT id, username, password
+        SELECT id, username, email, password
         FROM users
         WHERE username = $1 OR email = $1
         LIMIT 1
