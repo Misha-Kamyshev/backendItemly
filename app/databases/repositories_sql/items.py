@@ -137,7 +137,7 @@ async def get_like_db(user_id: int, last_id: int | None, limit: int) -> list[dic
                      JOIN items i ON i.id = il.item_id
             WHERE il.user_id = $1
               AND ($2::bigint IS NULL OR i.id < $2)
-            ORDER BY i.id DESC
+            ORDER BY il.id DESC
             LIMIT $3
             """
     rows = await asyncpg_db.fetch(query, user_id, last_id, limit)

@@ -19,6 +19,7 @@ class ItemsLike(Base):
 
     user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), primary_key=True)
     item_id: Mapped[int] = mapped_column(Integer, ForeignKey("items.id"), primary_key=True)
+    id: Mapped[int] = mapped_column(Integer, unique=True)
 
 
 class ItemsTags(Base):
