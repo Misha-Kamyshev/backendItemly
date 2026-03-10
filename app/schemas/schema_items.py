@@ -39,4 +39,4 @@ class ItemInformation(BaseModel):
 
 class SearchRequest(BaseModel):
     query: str
-    lastId: int | None
+    last_id: int | None = None

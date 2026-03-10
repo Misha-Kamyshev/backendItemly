@@ -68,7 +68,7 @@ async def change_preview(
 
     path_preview = await save_image_preview(image, user_id)
 
-    if not create_path_preview(session, user_id, path_preview):
+    if not await create_path_preview(session, user_id, path_preview):
         raise HTTPException(status_code=500, detail="Error in server")
 
     return Response(status_code=201)

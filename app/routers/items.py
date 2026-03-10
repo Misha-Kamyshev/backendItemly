@@ -215,7 +215,7 @@ async def delete_item(request: ItemRequest, session: AsyncSession = Depends(get_
 async def search_items(request: SearchRequest):
     limit = 20
 
-    rows = await search_items_db(request.query, request.lastId, limit)
+    rows = await search_items_db(request.query, request.last_id, limit)
 
     has_next = len(rows) > limit
     if has_next:
