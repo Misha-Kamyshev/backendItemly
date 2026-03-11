@@ -62,13 +62,13 @@ async def get_similar_items(
 
 @router.get("/get_information", response_model=ItemInformationResponse)
 async def get_information_item(
-        id_item: int = Query(None, description="item_id"),
+        item_id: int = Query(..., description="item_id"),
         credentials: JwtAuthorizationCredentials = Security(access_security)
 ):
     user_id: int = credentials.subject["id"]
 
-    tags = await get_tags_for_item(id_item)
-    info = await get_info_item(id_item, user_id)
+    tags = await get_tags_for_item(item_id)
+    info = await get_info_item(item_id, user_id)
 
     return ItemInformationResponse(tags=tags, icon_author=info["path_preview"], author=info["username"], name=info["name"],
                                    count_like=info["likes_count"], save_item=info["save_item"], like_item=info["like_item"])
