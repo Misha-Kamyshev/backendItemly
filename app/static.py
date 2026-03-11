@@ -38,5 +38,5 @@ access_security = JwtAccessBearerCookie(
 refresh_security = JwtRefreshBearerCookie(
     secret_key=SECRET_KEY_REFRESH,
     algorithm='HS256',
-    access_expires_delta=timedelta(days=15)
+    refresh_expires_delta=timedelta(days=15)
 )
