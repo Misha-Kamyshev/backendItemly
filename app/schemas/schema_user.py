@@ -1,24 +1,23 @@
 from pydantic import BaseModel
 
 
-class CreateUserSchema(BaseModel):
+class CreateUserRequest(BaseModel):
     username: str
     email: str
     password: str
 
 
-class LoginUserSchema(BaseModel):
+class LoginUserRequest(BaseModel):
     login: str
     password: str
 
 
-class PushDataUserSchema(BaseModel):
+class DataUserResponse(BaseModel):
     username: str
     email: str
     access_token: str
     refresh_token: str
-    
 
-class PushPreviewImageUserSchema(BaseModel):
+
+class PreviewImageUserResponse(BaseModel):
     path_preview: str | None
-
