@@ -7,10 +7,11 @@ from starlette.responses import Response
 from ..databases.models.model_item import FavoriteItem, ItemsLike
 from ..databases.postgres_orm import get_session
 from ..databases.repositories_orm.item import save_image, add_tags, add_items_tags, add_item_db, add_favorite, \
-    delete_relation, add_like_db, delete_item_db
+    delete_relation, add_like_db, delete_item_db, delete_image
 from ..databases.repositories_sql.items import get_similar_items_db, get_like_items_db, get_tags_from_like, \
     get_favorite_items, get_my_items, get_info_item, get_like_db, get_items_author_db, search_items_db
-from ..schemas.schema_items import ItemsDataResponse, ItemSimilarRequest, ItemData, ItemInformationResponse, SearchRequest
+from ..schemas.schema_items import ItemsDataResponse, ItemSimilarRequest, ItemData, ItemInformationResponse, \
+    SearchRequest
 from ..databases.repositories_sql.tags import get_tags_for_item, get_tags
 from ..static import access_security
 
@@ -70,8 +71,13 @@ async def get_information_item(
     tags = await get_tags_for_item(item_id)
     info = await get_info_item(item_id, user_id)
 
-    return ItemInformationResponse(tags=tags, icon_author=info["path_preview"], author=info["username"], name=info["name"],
-                                   count_like=info["likes_count"], save_item=info["save_item"], like_item=info["like_item"])
+    if info is None or tags is None:
+        raise HTTPException(status_code=404, detail="Item not found")
+
+    return ItemInformationResponse(tags=tags, icon_author=info["path_preview"], author=info["username"],
+                                   name=info["name"],
+                                   count_like=info["likes_count"], save_item=info["save_item"],
+                                   like_item=info["like_item"])
 
 
 @router.post("/add_item", status_code=201)
@@ -246,7 +252,11 @@ async def delete_item(
 ):
     user_id: int = credentials.subject["id"]
 
-    if not await delete_item_db(session, user_id, item_id):
+    result_db = await delete_item_db(session, user_id, item_id)
+    if result_db is None:
+        raise HTTPException(status_code=500, detail="Item not deleted")
+
+    if not await delete_image(result_db):
         raise HTTPException(status_code=500, detail="Item not deleted")
 
     return Response(status_code=204)

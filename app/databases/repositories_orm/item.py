@@ -1,9 +1,11 @@
 import os
 import uuid
 import aiofiles
+import aiofiles.os
 
 from typing import Type
 from fastapi import UploadFile
+from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -94,6 +96,31 @@ async def add_like_db(session: AsyncSession, user_id: int, item_id: int) -> bool
         return False
 
 
+async def delete_item_db(session: AsyncSession, user_id: int, item_id: int) -> str | None:
+    try:
+        result = await session.execute(
+            select(Item).where(
+                Item.id == item_id,
+                Item.user_id == user_id
+            )
+        )
+
+        obj = result.scalar_one_or_none()
+
+        if not obj:
+            return None
+
+        image_url = obj.image_url
+
+        await session.delete(obj)
+        await session.commit()
+
+        return image_url
+    except SQLAlchemyError:
+        await session.rollback()
+        return None
+
+
 async def save_image(image: UploadFile, user_id: int) -> str:
     uid = str(uuid.uuid4())
     ext = image.filename.split(".")[-1]
@@ -110,15 +137,9 @@ async def save_image(image: UploadFile, user_id: int) -> str:
     return file_path
 
 
-async def delete_item_db(session: AsyncSession, user_id: int, item_id: int) -> bool:
-    obj = await session.get(Item, (user_id, item_id))
-
-    if not obj:
-        return True
-
+async def delete_image(filename: str) -> bool:
     try:
-        await session.delete(obj)
+        os.remove(filename)
         return True
-    except SQLAlchemyError:
-        await session.rollback()
+    except Exception:
         return False
