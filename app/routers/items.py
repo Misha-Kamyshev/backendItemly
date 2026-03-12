@@ -145,7 +145,7 @@ async def get_my_image(
 
 @router.post("/save_item", status_code=201)
 async def save_item(
-        item_id: int = Query(None, description="item_id"),
+        item_id: int = Query(..., description="item_id"),
         credentials: JwtAuthorizationCredentials = Security(access_security),
         session: AsyncSession = Depends(get_session)
 ):
@@ -159,7 +159,7 @@ async def save_item(
 
 @router.post("/delete_favorite_item", status_code=204)
 async def delete_favorite_item(
-        item_id: int = Query(None, description="item_id"),
+        item_id: int = Query(..., description="item_id"),
         credentials: JwtAuthorizationCredentials = Security(access_security),
         session: AsyncSession = Depends(get_session)
 ):
@@ -173,7 +173,7 @@ async def delete_favorite_item(
 
 @router.post("/add_like", status_code=201)
 async def add_like(
-        item_id: int = Query(None, description="item_id"),
+        item_id: int = Query(..., description="item_id"),
         credentials: JwtAuthorizationCredentials = Security(access_security),
         session: AsyncSession = Depends(get_session)
 ):
@@ -187,7 +187,7 @@ async def add_like(
 
 @router.post("/delete_like", status_code=204)
 async def delete_like(
-        item_id: int = Query(None, description="item_id"),
+        item_id: int = Query(..., description="item_id"),
         credentials: JwtAuthorizationCredentials = Security(access_security),
         session: AsyncSession = Depends(get_session)
 ):
@@ -240,7 +240,7 @@ async def get_items_author(
 
 @router.post("/delete_item", status_code=204)
 async def delete_item(
-        item_id: int = Query(None, description="item_id"),
+        item_id: int = Query(..., description="item_id"),
         credentials: JwtAuthorizationCredentials = Security(access_security),
         session: AsyncSession = Depends(get_session)
 ):

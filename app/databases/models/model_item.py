@@ -1,4 +1,4 @@
-from sqlalchemy import Integer, String, ForeignKey
+from sqlalchemy import Integer, String, ForeignKey, Identity
 from sqlalchemy.orm import Mapped
 from sqlalchemy.testing.schema import mapped_column
 
@@ -19,7 +19,7 @@ class ItemsLike(Base):
 
     user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), primary_key=True)
     item_id: Mapped[int] = mapped_column(Integer, ForeignKey("items.id"), primary_key=True)
-    id: Mapped[int] = mapped_column(Integer, unique=True)
+    id: Mapped[int] = mapped_column(Integer, Identity(), unique=True)
 
 
 class ItemsTags(Base):
