@@ -21,7 +21,6 @@
 """
 
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 
@@ -29,15 +28,6 @@ from app.databases.postgres_asyncpg import asyncpg_db
 from .databases.postgres_orm import init_engine
 from .static import SQLALCHEMY_DSN, ASYNC_PG_DSN
 from .routers import users, items
-
-app = FastAPI()
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["https://localhost:5173", "https://127.0.0.1:5173"],
-    allow_credentials=True,
-    allow_methods=["POST", 'GET'],
-    allow_headers=["Content-Type", "Authorization", "*"]
-)
 
 
 @asynccontextmanager
